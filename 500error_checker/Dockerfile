@@ -42,8 +42,7 @@ RUN pip3 install -r requirements.txt
 COPY .env /500error_checker/.env
 
 # 크론탭 설정
-# RUN echo "0 15 * * * /500error_checker/venv/bin/python /500error_checker/main.py >> /var/log/cron.log 2>&1" > /etc/cron.d/500error_checker_cron
-RUN echo "* * * * * /500error_checker/venv/bin/python /500error_checker/main.py >> /var/log/cron.log 2>&1" > /etc/cron.d/500error_checker_cron
+RUN echo "0 11 * * * /500error_checker/venv/bin/python /500error_checker/main.py >> /var/log/cron.log" > /etc/cron.d/500error_checker_cron
 RUN chmod 0644 /etc/cron.d/500error_checker_cron
 RUN crontab /etc/cron.d/500error_checker_cron
 
