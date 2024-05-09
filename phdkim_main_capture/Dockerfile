@@ -37,8 +37,8 @@ RUN wget -N https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.
 RUN unzip /download/chromedriver-linux64.zip -d /download
 RUN chmod +x /download/chromedriver-linux64/chromedriver
 
-# Chromedriver 경로를 PATH에 추가
-ENV PATH="/download/chromedriver-linux64:${PATH}"
+# # Chromedriver 경로를 PATH에 추가
+# ENV PATH="/download/chromedriver-linux64:${PATH}"
 
 # 가상환경 생성
 RUN python3.8 -m venv venv
@@ -53,7 +53,7 @@ RUN pip3 install -r requirements.txt
 COPY .env /phdkim_main_capture/.env
 
 # 크론탭 설정
-RUN echo "* * * * * /phdkim_main_capture/venv/bin/python /phdkim_main_capture/main.py >> /var/log/cron.log 2>&1" > /etc/cron.d/phdkim_main_capture_cron
+RUN echo "5 11 * * * /phdkim_main_capture/venv/bin/python /phdkim_main_capture/main.py >> /var/log/cron.log 2>&1" > /etc/cron.d/phdkim_main_capture_cron
 RUN chmod 0644 /etc/cron.d/phdkim_main_capture_cron
 RUN crontab /etc/cron.d/phdkim_main_capture_cron
 

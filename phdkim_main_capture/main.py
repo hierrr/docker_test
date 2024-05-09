@@ -3,8 +3,9 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 import os
+import glob
 import time
-import datetime
+from datetime import datetime, timezone, timedelta
 import requests
 from dotenv import load_dotenv
 
@@ -45,7 +46,7 @@ try:
         print(f"Error closing popup: {e}")
 
     # Generate filename with today's date
-    date_str = datetime.datetime.now()
+    date_str = datetime.now(timezone(timedelta(hours=9))).strftime('%Y-%m-%d-%H-%M-%S')
     filename = f"screenshot_{date_str}.png"
 
     # Take and save screenshot
@@ -54,10 +55,15 @@ try:
     # Cleanup: close the browser
     driver.quit()
 
+    png_files = glob.glob(os.path.join('/phdkim_main_capture', '*.png'))
+    latest_file = os.path.basename(max(png_files, key=os.path.getatime)) if png_files else ""
+
     # slack_message_error('메인 홈페이지 채용 공고 이미지 저장 성공')
-    slack_message(f"도커 테스트: 메인 홈페이지 채용 공고 이미지 저장 성공")
+    slack_message(f"도커 테스트: 메인 홈페이지 채용 공고 이미지 저장 성공, {latest_file}")
     print(1)
 
 except Exception as e:
     # slack_message_error(str(e))
     slack_message(f"도커 테스트: 메인 홈페이지 채용 공고 이미지 저장 실패, {str(e)}")
+
+

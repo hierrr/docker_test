@@ -24,7 +24,8 @@ def get_latest_post_id():
 def slack_message(text):
     token = os.getenv("SLACK_TOKEN")
     channel = os.getenv("SLACK_CHANNEL") 
-    requests.post("https://slack.com/api/chat.postMessage", headers={"Authorization": "Bearer "+token}, data={"channel": channel,"text": text})
+    requests.post("https://slack.com/api/chat.postMessage", 
+                  headers={"Authorization": "Bearer "+token}, data={"channel": channel,"text": text})
 
 
 def check_error(url):
