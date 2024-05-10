@@ -164,7 +164,7 @@ def upload_post(title, content):
         # 시간 지연 추가
 
     except Exception as e:
-        print(f"오류 발생: {str(e)}")
+        logger.info(f"오류 발생: {str(e)}")
 
     finally:
         driver.quit()
