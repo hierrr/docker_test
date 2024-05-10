@@ -1,7 +1,7 @@
 
 import requests
 def post_content(title, content):
-    url = "https://69f5-43-201-22-7.ngrok-free.app/contents_upload" # ngrok forwarding
+    url = "https://87b1-43-201-22-7.ngrok-free.app/contents_upload" # ngrok forwarding
     data = {
         "title": title,
         "content": content

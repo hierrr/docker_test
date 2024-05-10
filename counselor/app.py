@@ -16,6 +16,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -111,7 +112,10 @@ def upload_post(title, content):
     chrome_options.add_argument("--start-maximized")
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--window-size=1920,1080')  # 창 크기 설정 추가
-    driver = webdriver.Chrome(options=chrome_options)
+    chrome_options.add_argument("--verbose")  # 상세 로그 활성화
+    chrome_options.add_argument("--log-path=chromedriver.log")  # 로그 파일 지정
+    service = Service('/download/chromedriver-linux64/chromedriver')
+    driver = webdriver.Chrome(service=service, options=chrome_options)
 
     try:
         # 로그인
