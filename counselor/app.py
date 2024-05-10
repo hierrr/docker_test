@@ -115,6 +115,7 @@ def upload_post(title, content):
 
     try:
         # 로그인
+        logger.info(f"upload_post: try to upload post")
         driver.get("https://stage.phdkim.net/login?next=%2Fboard%2Fwrite")
         logger.info(f"upload_post: homepage open")
         email_input = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "#__layout > div > main > div > div > div.input-box > div:nth-child(1) > input")))
