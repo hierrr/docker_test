@@ -28,9 +28,9 @@ slack_token = os.getenv('SLACK_TOKEN')
 DATABASE = 'logs.db'
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logger.info)
+logger.setLevel(logging.info)
 handler = logging.FileHandler('app.log')
-handler.setLevel(logger.info)
+handler.setLevel(logging.info)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
