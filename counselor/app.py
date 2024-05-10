@@ -28,9 +28,9 @@ slack_token = os.getenv('SLACK_TOKEN')
 DATABASE = 'logs.db'
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logger.info)
 handler = logging.FileHandler('app.log')
-handler.setLevel(logging.INFO)
+handler.setLevel(logger.info)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
@@ -73,15 +73,15 @@ def delete_message(channel_id, message_ts):
 @app.route('/slack/actions', methods=['POST'])
 def handle_actions():
     payload = json.loads(request.form['payload'])
-    logging.info(f"Payload: {payload}")
+    logger.info(f"Payload: {payload}")
     
     callback_id = payload['callback_id']
     user_id = payload['user']['id']
     channel_id = payload['channel']['id']
     message_ts = payload['message_ts']
     
-    logging.info(f"Channel ID: {channel_id}")
-    logging.info(f"Message Timestamp: {message_ts}")
+    logger.info(f"Channel ID: {channel_id}")
+    logger.info(f"Message Timestamp: {message_ts}")
     
     if callback_id == 'contents_approval':
         action = payload['actions'][0]['value']
@@ -91,12 +91,13 @@ def handle_actions():
             content = data['content']
             
             # 승인 버튼 클릭 시 동작할 함수 호출
+            logger.info(f"handle_actions > approve_action called")
             approve_action(title, content)
-            logging.info(f"컨텐츠 업로드가 승인되었습니다. Title: {title}, Content: {content}")
+            logger.info(f"컨텐츠 업로드가 승인되었습니다. Title: {title}, Content: {content}")
         else:
             # 거절 버튼 클릭 시 동작할 함수 호출
             reject_action(user_id)
-            logging.info("컨텐츠 업로드가 거절되었습니다.")
+            logger.info("컨텐츠 업로드가 거절되었습니다.")
     
     
     return '', 200
@@ -115,14 +116,18 @@ def upload_post(title, content):
     try:
         # 로그인
         driver.get("https://stage.phdkim.net/login?next=%2Fboard%2Fwrite")
+        logger.info(f"upload_post: homepage open")
         email_input = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "#__layout > div > main > div > div > div.input-box > div:nth-child(1) > input")))
         email = "palusomni20@gmail.com"
         email_input.send_keys(email)
+        logger.info(f"upload_post: email input")
         password_input = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "#__layout > div > main > div > div > div.input-box > div:nth-child(2) > div > input")))
         password = "Pal0911!!"
         password_input.send_keys(password)
+        logger.info(f"upload_post: password input")
         button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button.btn.btn-login.btn-fill.--active")))
         button.click()
+        logger.info(f"upload_post: logged in")
 
         # 로그인 후 다음 페이지 로딩 대기
         WebDriverWait(driver, 10).until(EC.url_contains("https://stage.phdkim.net/board/write"))
@@ -131,21 +136,25 @@ def upload_post(title, content):
         radio_button_css = "#__layout > div > main > div > div.board-write-box > div.write-box > div.board-list > div.visible-pc > div > label:nth-child(1) > span.path"
         radio_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, radio_button_css)))
         radio_button.click()
+        logger.info(f"upload_post: write page open")
 
         # write 페이지 요소 선택 및 입력
         title_css = "#__layout > div > main > div > div.board-write-box > div.write-box > div.title-area > input"
         title_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, title_css)))
         title_element.clear()
         title_element.send_keys(title)
+        logger.info(f"upload_post: title input")
 
         contents_css = "#__layout > div > main > div > div.board-write-box > div.write-box > textarea"
         contents_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, contents_css)))
         contents_element.clear()
         contents_element.send_keys(content)
+        logger.info(f"upload_post: content input")
 
         submit_button_css = "#__layout > div > main > div > div.board-write-box > div.write-box > div.editing-area > div.right.visible-pc > button"
         submit_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, submit_button_css)))
         submit_button.click()
+        logger.info(f"upload_post: post uploaded")
 
         # 시간 지연 추가
 
@@ -210,6 +219,7 @@ def handle_contents_upload():
 
 def approve_action(title, content):
     # 승인 버튼 클릭 시 동작할 코드 작성
+    logger.info(f"approve_action > upload_post called")
     upload_post(title, content)
 
 def reject_action(user_id):
