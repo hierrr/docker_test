@@ -1,7 +1,8 @@
 
 import requests
 def post_content(title, content):
-    url = "http://172.17.0.2:5000/contents_upload" # docker ip로 변경
+    # url = "http://172.17.0.2:5000/contents_upload" # docker ip로 변경
+    url = "http://43.201.22.7/contents_upload" # aws ec2 public ip
     data = {
         "title": title,
         "content": content

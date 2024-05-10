@@ -15,8 +15,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 import ssl
+
 ssl._create_default_https_context = ssl._create_unverified_context
+
 load_dotenv()
+
 app = Flask(__name__)
 slack_token = os.getenv("SLACK_TOKEN")
 DATABASE = 'logs.db'
@@ -27,6 +30,7 @@ handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
@@ -40,6 +44,7 @@ def get_db():
             )
         ''')
     return db
+
 def send_message_to_slack(user_id, message):
     try:
         client_web = WebClient(token=slack_token)
@@ -47,6 +52,7 @@ def send_message_to_slack(user_id, message):
         logger.info(f"Message sent to user {user_id}: {message}")
     except SlackApiError as e:
         logger.error(f"Error sending message to user {user_id}: {e}")
+
 def delete_message(channel_id, message_ts):
     try:
         client_web = WebClient(token=slack_token)
@@ -58,6 +64,7 @@ def delete_message(channel_id, message_ts):
             logging.error(f"Failed to delete message: {response['error']}")
     except SlackApiError as e:
         logging.error(f"Error deleting message: {e}")
+
 @app.route('/slack/actions', methods=['POST'])
 def handle_actions():
     payload = json.loads(request.form['payload'])
@@ -75,13 +82,16 @@ def handle_actions():
             title = data['title']
             content = data['content']
             # 승인 버튼 클릭 시 동작할 함수 호출
+            logger.info("/slack/actions > approve_action")
             approve_action(title, content)
             logging.info(f"컨텐츠 업로드가 승인되었습니다. Title: {title}, Content: {content}")
         else:
             # 거절 버튼 클릭 시 동작할 함수 호출
+            logger.info("/slack/actions > reject_action")
             reject_action(user_id)
             logging.info("컨텐츠 업로드가 거절되었습니다.")
     return '', 200
+
 def upload_post(title, content):
     # 웹드라이버 설정
     chrome_options = Options()
@@ -89,30 +99,40 @@ def upload_post(title, content):
     driver = webdriver.Chrome()
     # 로그인
     driver.get("https://stage.phdkim.net/login?next=%2Fboard%2Fwrite")
+    logger.info("upload_post > homepage entered")
     email_input = driver.find_element(By.CSS_SELECTOR, "#__layout > div > main > div > div > div.input-box > div:nth-child(1) > input")
     email = "palusomni20@gmail.com"
     email_input.send_keys(email)
+    logger.info("upload_post > email input")
     password_input = driver.find_element(By.CSS_SELECTOR, "#__layout > div > main > div > div > div.input-box > div:nth-child(2) > div > input")
     password = "Pal0911!!"
     password_input.send_keys(password)
+    logger.info("upload_post > password input")
     button = driver.find_element(By.CSS_SELECTOR, "button.btn.btn-login.btn-fill.--active")
     button.click()
+    logger.info("upload_post > login")
     # 로그인 후 다음 페이지 로딩 대기
     WebDriverWait(driver, 10).until(EC.url_contains("https://stage.phdkim.net/board/write"))
     radio_button = driver.find_element(By.CSS_SELECTOR, "#__layout > div > main > div > div.board-write-box > div.write-box > div.board-list > div.visible-pc > div > label:nth-child(1) > span.path")
     radio_button.click()
+    logger.info("upload_post > write button clicked")
     # write 페이지 요소 선택 및 입력
     title_css = "#__layout > div > main > div > div.board-write-box > div.write-box > div.title-area > input"
     title_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, title_css)))
     title_element.clear()
     title_element.send_keys(title)
+    logger.info("upload_post > title input")
     contents_css = "#__layout > div > main > div > div.board-write-box > div.write-box > textarea"
     contents_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, contents_css)))
     contents_element.clear()
     contents_element.send_keys(content)
+    logger.info("upload_post > content input")
     submit_button = driver.find_element(By.CSS_SELECTOR, "#__layout > div > main > div > div.board-write-box > div.write-box > div.editing-area > div.right.visible-pc > button")
     submit_button.click()
+    logger.info("upload_post > post uploaded")
     driver.quit()
+    logger.info("upload_post > driver quit")
+
 def send_interactive_message_stage(title, content):
     try:
         client = WebClient(token=slack_token)
@@ -147,6 +167,7 @@ def send_interactive_message_stage(title, content):
         logger.info(f"Interactive message sent to channel {channel_id}")
     except SlackApiError as e:
         logger.error(f"Error sending interactive message to channel {channel_id}: {e}")
+
 @app.route('/contents_upload', methods=['POST'])
 def handle_contents_upload():
     data = request.json
@@ -160,12 +181,17 @@ def handle_contents_upload():
     # 인터랙티브 메시지 전송
     send_interactive_message_stage(title, content)
     return jsonify({"status": "success"})
+
 def approve_action(title, content):
     # 승인 버튼 클릭 시 동작할 코드 작성
+    logger.info("approve_action > upload_post")
     upload_post(title, content)
+
 def reject_action(user_id):
     # 거절 버튼 클릭 시 동작할 함수
     message = "거절되었습니다."
+    logger.info("reject_action > send_message_to_slack")
     send_message_to_slack(user_id, message)
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
