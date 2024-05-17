@@ -1,5 +1,5 @@
 .DS_Store
-.pem
+*.pem
 .env
-venv
-.sh
+venv/
+*.sh
